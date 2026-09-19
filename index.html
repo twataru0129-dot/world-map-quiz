@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<title>せかいの国 どこかな？</title>
+<meta name="description" content="世界地図から国をさがすこどもむけクイズゲーム" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%8D%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="js/vendor/leaflet/leaflet.css" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div id="app">
+
+  <!-- 1. トップ画面 -->
+  <section id="screen-top" class="screen screen-top active" aria-label="トップ画面">
+    <div class="top-decor" aria-hidden="true">🌍✈️🧭</div>
+    <h1 class="app-title">せかいの国<br />どこかな？</h1>
+    <p class="app-subtitle">ちずの中から 国をさがそう！</p>
+    <div class="top-buttons">
+      <button id="btn-start" class="btn btn-primary btn-huge" aria-label="ちいきをえらんで あそびはじめる">
+        ▶ あそびはじめる
+      </button>
+      <button id="btn-open-collection" class="btn btn-secondary" aria-label="コレクションをひらく">
+        📖 コレクション
+      </button>
+      <button id="btn-open-titles" class="btn btn-secondary" aria-label="しょうごうをひらく">
+        🏆 しょうごう
+      </button>
+    </div>
+    <button id="btn-sound-toggle" class="btn-sound" aria-label="おとのオン・オフ">🔊 おと：オン</button>
+  </section>
+
+  <!-- 2. 地域選択 -->
+  <section id="screen-region" class="screen screen-region" aria-label="ちいき選択画面">
+    <button class="btn-back" data-back-to="screen-top" aria-label="トップにもどる">← もどる</button>
+    <h2 class="screen-heading">ちいきをえらぼう！</h2>
+    <div class="region-grid" id="region-grid"></div>
+  </section>
+
+  <!-- 3. 難易度選択 -->
+  <section id="screen-difficulty" class="screen screen-difficulty" aria-label="なんいど選択画面">
+    <button class="btn-back" data-back-to="screen-region" aria-label="ちいき選択にもどる">← もどる</button>
+    <h2 class="screen-heading" id="difficulty-region-label">なんいどをえらぼう！</h2>
+    <div class="difficulty-grid">
+      <button class="btn btn-difficulty diff-easy" data-difficulty="easy" aria-label="かんたん を選ぶ">
+        <span class="diff-emoji">🌱</span>かんたん
+      </button>
+      <button class="btn btn-difficulty diff-normal" data-difficulty="normal" aria-label="ふつう を選ぶ">
+        <span class="diff-emoji">🌟</span>ふつう
+      </button>
+      <button class="btn btn-difficulty diff-hard" data-difficulty="hard" aria-label="むずかしい を選ぶ">
+        <span class="diff-emoji">🔥</span>むずかしい
+      </button>
+    </div>
+  </section>
+
+  <!-- 4. クイズ画面 -->
+  <section id="screen-quiz" class="screen screen-quiz" aria-label="クイズ画面">
+    <div class="quiz-header">
+      <div class="quiz-progress" id="quiz-progress" aria-live="polite">1 / 10もん</div>
+      <div class="quiz-question" id="quiz-question" aria-live="polite">日本をさがそう！</div>
+      <div class="quiz-timer" id="quiz-timer" role="timer" aria-live="polite">
+        のこり <span id="quiz-timer-value">30</span> びょう
+      </div>
+    </div>
+    <div id="map" class="quiz-map" role="application" aria-label="せかい地図。指またはマウスで うごかしたり ズームしたりできます。"></div>
+    <div id="quiz-feedback" class="quiz-feedback" aria-live="assertive"></div>
+  </section>
+
+  <!-- 5. 結果画面 -->
+  <section id="screen-result" class="screen screen-result" aria-label="けっか画面">
+    <h2 class="screen-heading">せいせき</h2>
+    <div class="result-card">
+      <p class="result-headline" id="result-headline">10もん中 8もん せいかい！</p>
+      <div class="result-stats">
+        <div class="result-stat">
+          <span class="result-stat-label">スコア</span>
+          <span class="result-stat-value" id="result-score">0</span>
+        </div>
+        <div class="result-stat">
+          <span class="result-stat-label">へいきん かいとうじかん</span>
+          <span class="result-stat-value" id="result-avg-time">0びょう</span>
+        </div>
+        <div class="result-stat">
+          <span class="result-stat-label">さいだい れんぞくせいかい</span>
+          <span class="result-stat-value" id="result-max-streak">0もん</span>
+        </div>
+      </div>
+      <div id="result-new-titles" class="result-new-titles"></div>
+    </div>
+    <div class="result-buttons">
+      <button id="btn-retry" class="btn btn-primary">🔁 もういちど</button>
+      <button id="btn-change-region" class="btn btn-secondary">🗺️ ちいきをえらぶ</button>
+      <button id="btn-to-top" class="btn btn-secondary">🏠 トップにもどる</button>
+    </div>
+  </section>
+
+  <!-- 6. コレクション画面 -->
+  <section id="screen-collection" class="screen screen-collection" aria-label="コレクション画面">
+    <button class="btn-back" data-back-to="screen-top" aria-label="トップにもどる">← もどる</button>
+    <h2 class="screen-heading">コレクション</h2>
+    <p class="collection-progress" id="collection-progress">0 / 198 こく</p>
+    <div class="collection-tabs" id="collection-tabs"></div>
+    <div class="collection-grid" id="collection-grid"></div>
+  </section>
+
+  <!-- 7. 称号画面 -->
+  <section id="screen-titles" class="screen screen-titles" aria-label="しょうごう画面">
+    <button class="btn-back" data-back-to="screen-top" aria-label="トップにもどる">← もどる</button>
+    <h2 class="screen-heading">しょうごう</h2>
+    <div class="titles-list" id="titles-list"></div>
+  </section>
+
+</div>
+
+<script src="js/vendor/leaflet/leaflet.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
